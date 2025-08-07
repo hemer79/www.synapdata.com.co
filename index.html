@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synapdata - Plataforma de Análisis de Datos Geográficos</title>
+    <!-- Tailwind CSS CDN para estilos de utilidad -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter para una tipografía moderna y legible -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome para iconos vectoriales -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Definición de variables CSS para colores principales */
+        :root {
+            --color-primary-indigo: #6366f1;
+            --color-secondary-violet: #8b5cf6;
+            --color-gradient-start: #7b83ff;
+            --color-gradient-end: #a07bff;
+            --color-text-dark: #334155;
+            --color-bg-light: #f8fafc;
+            --color-border-light: #e2e8f0;
+            --color-whatsapp: #25D366;
+            --color-whatsapp-hover: #128C7E;
+        }
+
+        /* Estilos base del cuerpo y tipografía, utilizando las variables CSS */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg-light);
+            color: var(--color-text-dark);
+        }
+        h1, h2, h3, h4, a {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Estilos para fondos con gradiente */
+        .gradient-bg {
+            background: linear-gradient(to right, var(--color-gradient-start), var(--color-gradient-end));
+        }
+
+        /* Estilos para botones primarios con sombra */
+        .btn-primary {
+            background-color: var(--color-primary-indigo);
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .btn-primary:hover {
+            background-color: var(--color-secondary-violet);
+        }
+        .btn-primary:active {
+            box-shadow: none; /* Efecto de "presionado" */
+        }
+
+        /* Estilos consistentes para las tarjetas con sombra */
+        .card-style {
+            background-color: #ffffff;
+            border-radius: 0.75rem; /* rounded-xl de Tailwind */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .card-style:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .service-item-bg {
+            background-color: #ffffff;
+            border: 1px solid var(--color-border-light);
+        }
+
+        /* Estilos para modales */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.open {
+            display: flex;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            max-width: 90%;
+            width: 500px;
+            position: relative;
+            transform: translateY(-50px);
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); /* Sombra para el modal */
+        }
+        .modal.open .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .close-button {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        /* Estilo del botón "Volver arriba" */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--color-primary-indigo);
+            color: white;
+            padding: 1rem;
+            border-radius: 9999px;
+            transition: opacity 0.3s ease, visibility 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 999;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Estilos para el encabezado */
+        .initial-header-shadow {
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .header-scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        /* Superposición del menú móvil */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 30;
+            display: none;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        .mobile-menu-overlay.open {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Estilos para el botón de inicio de sesión con gradiente y sombra */
+        .btn-login-gradient {
+            background: linear-gradient(to right, var(--color-primary-indigo), var(--color-secondary-violet));
+            background-size: 200% 100%;
+            transition: background-position 0.4s ease-in-out, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .btn-login-gradient:hover {
+            background-position: -100% 0;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .btn-login-gradient:active {
+            box-shadow: none; /* Efecto de "presionado" */
+        }
+
+        /* Estilos para el botón de WhatsApp con sombra */
+        .whatsapp-btn {
+            background-color: var(--color-whatsapp);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .whatsapp-btn:hover {
+            background-color: var(--color-whatsapp-hover);
+        }
+        .whatsapp-btn:active {
+            box-shadow: none; /* Efecto de "presionado" */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Sección de Encabezado (Header) -->
+    <header id="main-header" class="bg-white py-4 md:py-6 sticky top-0 z-50 transition-all duration-300 initial-header-shadow">
+        <div class="container mx-auto px-4 md:px-8 flex justify-between items-center">
+            <!-- Sección del Logotipo -->
+            <a href="#" class="flex items-center space-x-2 text-2xl font-bold text-gray-800">
+                <!-- Logotipo SVG para escalabilidad y rendimiento -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="var(--color-primary-indigo)" stroke-width="2"/>
+                    <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 4V20" stroke="var(--color-secondary-violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4.27998 8.5H19.72" stroke="var(--color-secondary-violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4.27998 15.5H19.72" stroke="var(--color-secondary-violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9.5 2.13C9.5 2.13 9.5 7  9.5 12C9.5 17 9.5 21.87 9.5 21.87" stroke="var(--color-primary-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14.5 2.13C14.5 2.13 14.5 7 14.5 12C14.5 17 14.5 21.87 14.5 21.87" stroke="var(--color-primary-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Synapdata</span>
+            </a>
+
+            <!-- Navegación de Escritorio (visible en pantallas grandes) -->
+            <nav class="hidden md:flex items-center space-x-6">
+                <ul class="flex space-x-6 lg:space-x-8">
+                    <li><a href="#features" class="text-gray-600 hover:text-indigo-700 hover:underline font-medium transition duration-300">Características</a></li>
+                    <li><a href="#sig-benefits" class="text-gray-600 hover:text-indigo-700 hover:underline font-medium transition duration-300">SIG para Empresas</a></li>
+                    <li><a href="#study" class="text-gray-600 hover:text-indigo-700 hover:underline font-medium transition duration-300">Creando Valor</a></li>
+                    <li><a href="#solutions" class="text-gray-600 hover:text-indigo-700 hover:underline font-medium transition duration-300">Soluciones</a></li>
+                </ul>
+                <div class="flex items-center space-x-4 ml-6">
+                    <button type="button" onclick="openModal('contactModal')" class="text-gray-600 hover:text-indigo-600 font-medium">Contacto</button>
+                    <!-- Botón "Iniciar Sesión" mejorado con gradiente y texto centrado -->
+                    <a href="#" class="btn-login-gradient text-white px-5 py-2 rounded-lg font-semibold flex items-center justify-center">Iniciar Sesión</a>
+                </div>
+            </nav>
+
+            <!-- Botón de Menú Móvil (visible en pantallas pequeñas) -->
+            <button id="mobile-menu-button" class="md:hidden text-gray-600 focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Panel del Menú Móvil (se desliza desde la derecha) -->
+        <div id="mobile-menu-panel" class="hidden md:hidden fixed inset-0 bg-white z-40 p-8 transform translate-x-full transition-transform ease-in-out duration-300">
+            <div class="flex justify-end">
+                <button id="close-mobile-menu" class="text-gray-600 focus:outline-none">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <ul class="flex flex-col space-y-6 mt-8">
+                <li><a href="#features" class="block text-gray-800 text-xl font-medium hover:text-indigo-600 py-2">Características</a></li>
+                <li><a href="#sig-benefits" class="block text-gray-800 text-xl font-medium hover:text-indigo-600 py-2">SIG para Empresas</a></li>
+                <li><a href="#study" class="block text-gray-800 text-xl font-medium hover:text-indigo-600 py-2">Creando Valor</a></li>
+                <li><a href="#solutions" class="block text-gray-800 text-xl font-medium hover:text-indigo-600 py-2">Soluciones</a></li>
+                <li><button type="button" onclick="openModal('contactModal')" class="block text-gray-800 text-xl font-medium text-left hover:text-indigo-600 py-2">Contacto</button></li>
+                <li class="mt-4"><a href="#" class="btn-login-gradient block text-white px-5 py-3 rounded-lg text-center font-semibold">Iniciar Sesión</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Superposición del Menú Móvil (oscurece el fondo cuando el menú está abierto) -->
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay"></div>
+
+    <!-- Sección Hero con estilo replicado de la sección final -->
+    <section class="gradient-bg text-white py-20 px-4 text-center rounded-b-3xl">
+        <div class="container mx-auto">
+            <!-- Título y subtítulo con color de texto blanco para asegurar la visibilidad -->
+            <h1 class="text-5xl font-extrabold mb-4 leading-tight text-white">Synapdata: Tu Plataforma de Inteligencia Geoespacial</h1>
+            <p class="text-xl mb-12 max-w-3xl mx-auto opacity-90 text-white">
+                Transforma información compleja en conocimientos accionables para una toma de decisiones más estratégica.
+            </p>
+            
+            <!-- Tarjetas replicadas de la sección final para destacar propuestas de valor -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 px-4 md:px-0">
+                <!-- Tarjeta 1: Análisis Avanzado -->
+                <div class="card-style p-6 flex flex-col items-center text-center service-item-bg">
+                    <div class="text-indigo-500 mb-4">
+                         <i class="fas fa-chart-line text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-1 text-gray-800">Análisis Avanzado</h3>
+                    <p class="text-gray-700 mb-2">
+                        Realiza análisis espaciales y estadísticos complejos para descubrir patrones ocultos.
+                    </p>
+                </div>
+
+                <!-- Tarjeta 2: Inteligencia Geoespacial -->
+                <div class="card-style p-6 flex flex-col items-center text-center service-item-bg">
+                    <div class="text-indigo-500 mb-4">
+                         <i class="fas fa-map-marked-alt text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-1 text-gray-800">Inteligencia Geoespacial</h3>
+                    <p class="text-gray-700 mb-2">
+                        Transforma datos geográficos en conocimientos valiosos para la toma de decisiones.
+                    </p>
+                </div>
+
+                <!-- Tarjeta 3: Integración de Datos -->
+                <div class="card-style p-6 flex flex-col items-center text-center service-item-bg">
+                    <div class="text-indigo-500 mb-4">
+                         <i class="fas fa-database text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-1 text-gray-800">Integración de Datos</h3>
+                    <p class="text-gray-700 mb-2">
+                        Combina diversas fuentes de datos para una visión integral y completa.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Botón principal de la Sección Hero -->
+            <a href="#features" class="bg-white text-indigo-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 inline-block mt-12 hover:scale-105">Explorar Características</a>
+        </div>
+    </section>
+
+    <!-- Sección de Características (Features) -->
+    <section id="features" class="py-24 px-4 bg-gray-50">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-12 text-gray-800">Características Clave</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Característica 1: Visualización de Mapas Interactivos -->
+                <div class="card-style p-6">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">Visualización de Mapas Interactivos</h3>
+                    <p class="text-gray-600">Representa tus datos en mapas dinámicos y personalizables para una comprensión intuitiva.</p>
+                </div>
+                <!-- Característica 2: Análisis Espacial Avanzado -->
+                <div class="card-style p-6">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">Análisis Espacial Avanzado</h3>
+                    <p class="text-gray-600">Realiza análisis de proximidad, superposición, densidad y más con potentes herramientas.</p>
+                </div>
+                <!-- Característica 3: Integración de Datos -->
+                <div class="card-style p-6">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10l2 2h10l2-2V7m-2 0H6m2 0V5a2 2 0 012-2h4a2 2 0 012 2v2m-6 0H6"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">Integración de Datos</h3>
+                    <p class="text-gray-600">Conecta y combina datos de diversas fuentes para un análisis completo.</p>
+                </div>
+                <!-- Característica 4: Reportes Interactivos -->
+                <div class="card-style p-6">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">Reportes Interactivos</h3>
+                    <p class="text-gray-600">Genera informes dinámicos y exportables para compartir tus hallazgos.</p>
+                </div>
+                <!-- Característica 5: Modelos Auto-generados -->
+                <div class="card-style p-6">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">Modelos Auto-generados</h3>
+                    <p class="text-gray-600">Utiliza modelos pre-construidos para análisis comunes y acelera tu flujo de trabajo.</p>
+                </div>
+                <!-- Característica 6: Scripting (Python/R) -->
+                <div class="card-style p-6">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">Scripting (Python/R)</h3>
+                    <p class="text-gray-600">Extiende las capacidades de la plataforma con tus propios scripts personalizados.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Beneficios de SIG para Empresas -->
+    <section id="sig-benefits" class="py-16 px-4 bg-white">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-3 text-gray-800">La Clave para Potenciar tu Negocio</h2>
+            <p class="text-xl font-medium text-gray-500 mb-12">Sistemas de Información Geográfica (SIG)</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="text-left">
+                    <p class="text-lg text-gray-700 mb-6">
+                        El SIG es una herramienta fundamental en Synapdata, que ofrece un análisis espacial intuitivo e interactivo, permitiéndote descubrir patrones ocultos y tomar decisiones informadas.
+                    </p>
+                    <ul class="list-disc list-inside text-left text-gray-600 space-y-2">
+                        <li>Análisis Exploratorio con Mapas, Gráficos y Tablas.</li>
+                        <li>Interacciones dinámicas para una mejor comprensión de los datos.</li>
+                        <li>Limpieza dinámica de datos y uniones compuestas.</li>
+                        <li>Cálculos avanzados y GeoEnrichment.</li>
+                        <li>Opciones de presentación flexibles y exportación de resultados.</li>
+                        <li>Agrupamiento y Densidad de Radio (Andes).</li>
+                    </ul>
+                </div>
+                <div class="flex justify-center">
+                    <!-- Imagen de marcador de posición para la interfaz SIG -->
+                    <img src="https://placehold.co/600x400/e0e7ff/4338ca?text=Interfaz+SIG+Insights" alt="Interfaz de Synapdata SIG Insights" class="rounded-lg max-w-full h-auto shadow-lg">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección: Creando Valor con el Análisis Espacial -->
+    <section id="study" class="py-16 px-4 bg-gray-50">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-12 text-gray-800">Creando Valor con el Análisis Espacial</h2>
+            <div class="max-w-4xl mx-auto text-left">
+                <p class="text-lg text-gray-700 mb-6">
+                    Múltiples estudios de la industria han demostrado que el análisis espacial y las tecnologías SIG son mucho más que una herramienta de visualización. Son un motor estratégico que genera un retorno de la inversión (ROI) significativo al aumentar los ingresos, reducir los costos y mitigar los riesgos.
+                </p>
+
+                <!-- Aparte de Estudios con Datos Numéricos -->
+                <div class="card-style p-8 mb-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">El Desafío de los "Datos Oscuros"</h3>
+                    <p class="text-lg text-gray-700 mb-4">
+                        A pesar del enorme potencial, una gran parte de la información que las empresas generan y recopilan se pierde. Los estudios revelan el desafío de los "datos oscuros" (dark data), es decir, la información no analizada que no se utiliza para generar valor.
+                    </p>
+                    <div class="flex flex-col md:flex-row md:space-x-8 space-y-4 md:space-y-0">
+                        <div class="flex-1 p-6 bg-indigo-50 rounded-xl border border-indigo-200 shadow-md">
+                            <h4 class="text-xl font-bold text-indigo-600 mb-2">80% de los datos sin usar</h4>
+                            <p class="text-gray-600">Según un estudio de Softtek (2019), el 80% de los datos de los clientes se desperdician debido a una gestión inmadura de los mismos.</p>
+                        </div>
+                        <div class="flex-1 p-6 bg-indigo-50 rounded-xl border border-indigo-200 shadow-md">
+                            <h4 class="text-xl font-bold text-indigo-600 mb-2">95% de las empresas luchan</h4>
+                            <p class="text-gray-600">Un estudio de Edge Delta (2024) encontró que el 95% de las empresas reconocen el desafío de utilizar datos no estructurados para su beneficio.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-style p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Beneficios Clave del Análisis Espacial para las Empresas</h3>
+                    <ul class="list-disc list-inside text-gray-600 space-y-4">
+                        <li>
+                            <strong class="text-indigo-600">Crecimiento de Ingresos:</strong> Permite identificar nuevas oportunidades de mercado, optimizar la ubicación de sucursales o tiendas, y dirigir campañas de marketing de manera más efectiva al comprender la distribución de clientes y competidores.
+                        </li>
+                        <li>
+                            <strong class="text-indigo-600">Reducción de Costos:</strong> A través de la optimización de rutas de distribución, la gestión de la cadena de suministro y la planeación de la infraestructura, se evitan gastos innecesarios y se mejora la eficiencia operativa.
+                        </li>
+                        <li>
+                            <strong class="text-indigo-600">Mejora de la Eficacia y Productividad:</strong> Herramientas como el análisis de densidad y la planificación de territorios permiten a los equipos trabajar de manera más inteligente y rápida, reduciendo la necesidad de retrabajar tareas y mejorando la precisión en la toma de decisiones.
+                        </li>
+                        <li>
+                            <strong class="text-indigo-600">Disminución de Riesgos:</strong> Al anticipar problemas como la morosidad crediticia, el fraude o las fallas en la infraestructura, las empresas pueden tomar medidas proactivas para mitigar riesgos financieros y operativos.
+                        </li>
+                    </ul>
+                    <p class="mt-6 text-sm text-gray-500">
+                        *Basado en hallazgos de reportes de impacto empresarial de la industria de Sistemas de Información Geográfica (SIG).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Soluciones por Sector -->
+    <section id="solutions" class="py-16 px-4 bg-gray-50">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-12 text-gray-800">Nuestras Soluciones por Sector</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Solución 1: Banca -->
+                <div class="card-style p-6 flex flex-col items-center text-center service-item-bg">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.485 0-4.5 2.015-4.5 4.5S9.515 17 12 17s4.5-2.015 4.5-4.5S14.485 8 12 8z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18m-9-6v10"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-1">Banca</h3>
+                    <p class="text-gray-700 mb-2">
+                        Mejora la relación con los clientes, optimiza el ciclo de cobranza y detecta fraudes.
+                    </p>
+                    <ul class="list-disc list-inside text-left text-gray-600 mt-2 mb-4 space-y-1">
+                        <li><strong class="text-indigo-600">Gestión del Cliente:</strong> Mejora la relación y la fidelización para aumentar la retención y las ventas (venta cruzada, up-selling).</li>
+                        <li><strong class="text-indigo-600">Gestión de Riesgos:</strong> Anticipa y mitiga el riesgo de impagos y fraude, así como optimiza el ciclo de cobranza.</li>
+                        <li><strong class="text-indigo-600">Optimización Operativa:</strong> Mejora la eficiencia en la gestión de sucursales, personal y recursos como cajeros automáticos y call centers.</li>
+                    </ul>
+                </div>
+                <!-- Solución 2: Salud -->
+                <div class="card-style p-6 flex flex-col items-center text-center service-item-bg">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-1">Salud</h3>
+                    <p class="text-gray-700 mb-2">
+                        Analítica de la salud para la detección de poblaciones en riesgo y la mejora de la satisfacción.
+                    </p>
+                    <ul class="list-disc list-inside text-left text-gray-600 mt-2 mb-4 space-y-1">
+                        <li><strong class="text-indigo-600">Analítica Poblacional:</strong> Analítica de la salud a nivel poblacional.</li>
+                        <li><strong class="text-indigo-600">Detección de Riesgos:</strong> Detección de poblaciones y pacientes en riesgo.</li>
+                        <li><strong class="text-indigo-600">Satisfacción del Paciente:</strong> Mejora en la satisfacción de los pacientes.</li>
+                        <li><strong class="text-indigo-600">Análisis para Pagadores:</strong> Analítica de la salud relacionada con los pagadores.</li>
+                    </ul>
+                </div>
+                <!-- Solución 3: Retail -->
+                <div class="card-style p-6 flex flex-col items-center text-center service-item-bg">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-1">Retail</h3>
+                    <p class="text-gray-700 mb-2">
+                        Utiliza geomarketing para optimizar la distribución de ventas y fidelización de clientes.
+                    </p>
+                    <ul class="list-disc list-inside text-left text-gray-600 mt-2 mb-4 space-y-1">
+                        <li><strong class="text-indigo-600">Geomarketing:</strong> Estrategias de mercado basadas en la localización.</li>
+                        <li><strong class="text-indigo-600">Distribución y Ventas:</strong> Optimización de la distribución de ventas.</li>
+                        <li><strong class="text-indigo-600">Fidelización de Clientes:</strong> Análisis para mejorar la lealtad de los clientes.</li>
+                        <li><strong class="text-indigo-600">Optimización de Rutas:</strong> Mejora de la eficiencia en las rutas de entrega.</li>
+                        <li><strong class="text-indigo-600">Análisis de Productos:</strong> Análisis de rotación de productos para una mejor gestión de inventario.</li>
+                    </ul>
+                </div>
+                <!-- Solución 4: Servicios Públicos -->
+                <div class="card-style p-6 flex flex-col items-center text-center service-item-bg">
+                    <div class="text-indigo-500 mb-4">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-.957 1.659-.957 2.085 0a1.808 1.808 0 010 2.273v.259a2.25 2.25 0 00-2.25 2.25v2.25c0 .414-.168.81-.468 1.109l-2.025 2.026a2.25 2.25 0 00-2.25 0V15c-.414 0-.81.168-1.109.468l-2.026 2.025a2.25 2.25 0 000 2.25l2.025 2.026c.299.299.695.468 1.109.468h2.25a2.25 2.25 0 002.25-2.25V17.25c0-.414-.168-.81-.468-1.109l-2.026-2.025a2.25 2.25 0 000-2.25l2.026-2.025c.299-.299.468-.695.468-1.109V8.25c0-.414-.168-.81-.468-1.109z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-1">Servicios Públicos</h3>
+                    <p class="text-gray-700 mb-2">
+                        Optimización de la gestión de redes, infraestructuras y planificación de servicios urbanos.
+                    </p>
+                    <ul class="list-disc list-inside text-left text-gray-600 mt-2 mb-4 space-y-1">
+                        <li><strong class="text-indigo-600">Gestión de Redes:</strong> Gestión y mantenimiento de redes (agua, electricidad).</li>
+                        <li><strong class="text-indigo-600">Análisis de Consumo:</strong> Análisis de consumo y detección de fugas.</li>
+                        <li><strong class="text-indigo-600">Planificación Urbana:</strong> Optimización de la infraestructura urbana.</li>
+                        <li><strong class="text-indigo-600">Servicios de Emergencia:</strong> Planificación de servicios de emergencia.</li>
+                        <li><strong class="text-indigo-600">Monitoreo de Activos:</strong> Monitoreo de activos y recursos.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Llamada a la Acción (Call to Action) -->
+    <section class="gradient-bg text-white py-16 px-4 text-center">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold mb-6 text-white">Transforma tus Datos en Decisiones Estratégicas</h2>
+            <p class="text-xl mb-10 max-w-2xl mx-auto opacity-90 text-white">
+                Descubre cómo Synapdata puede optimizar tus operaciones y mejorar tus resultados.
+            </p>
+            <!-- Botón que abre el modal de contacto -->
+            <button type="button" onclick="openModal('contactModal')" class="bg-white text-indigo-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition duration-300 shadow-lg hover:scale-105">Contáctenos</button>
+        </div>
+    </section>
+
+    <!-- Modal de Contacto -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('contactModal')">&times;</span>
+            <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Ponte en Contacto</h2>
+            <p class="text-lg text-gray-600 mb-6 text-center">
+                ¿Tienes preguntas o quieres una demostración? Elige la mejor forma de comunicarte.
+            </p>
+            
+            <!-- Sección de Contacto por WhatsApp -->
+            <div class="mb-6">
+                <a href="https://wa.me/573505721031" target="_blank" class="whatsapp-btn flex items-center justify-center space-x-3 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
+                    <i class="fab fa-whatsapp text-2xl"></i>
+                    <span>Chatea con nosotros en WhatsApp</span>
+                </a>
+            </div>
+
+            <div class="relative flex py-5 items-center">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-500">O</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            <!-- Formulario de Contacto -->
+            <form id="contactForm" class="space-y-6">
+                <div>
+                    <label for="modal-name" class="block text-left text-gray-700 text-sm font-medium mb-2">Nombre Completo</label>
+                    <input type="text" id="modal-name" name="name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Tu Nombre" required>
+                </div>
+                <div>
+                    <label for="modal-email" class="block text-left text-gray-700 text-sm font-medium mb-2">Correo Electrónico</label>
+                    <input type="email" id="modal-email" name="email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="tu.email@ejemplo.com" required>
+                </div>
+                <div>
+                    <label for="modal-message" class="block text-left text-gray-700 text-sm font-medium mb-2">Tu Mensaje</label>
+                    <textarea id="modal-message" name="message" rows="5" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Escribe tu mensaje aquí..." required></textarea>
+                </div>
+                <button type="button" id="modal-submit-button" class="btn-primary w-full text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition duration-300">Enviar Mensaje</button>
+                <div id="modal-form-message" class="mt-4 text-sm text-center font-medium"></div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de Políticas de Privacidad -->
+    <div id="privacyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('privacyModal')">&times;</span>
+            <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Políticas de Privacidad</h2>
+            <div class="prose max-w-none text-gray-700">
+                <p class="text-lg font-semibold mb-4">Última actualización: Agosto de 2025</p>
+                <p>En Synapdata, valoramos tu privacidad y estamos comprometidos a proteger tus datos personales. Esta política de privacidad describe cómo recopilamos, utilizamos, almacenamos y divulgamos la información que obtenemos de nuestros usuarios.</p>
+                <p>Esta política se rige por la legislación colombiana, en particular por la Ley 1581 de 2012, el Decreto 1377 de 2013, y demás normas que regulan la protección de datos personales.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">1.1. Identificación del Responsable del Tratamiento de Datos</h3>
+                <ul>
+                    <li><strong>Razón Social:</strong> Partner & Investmen S.A.S - Synapdata</li>
+                    <li><strong>NIT:</strong> 901.156.282-9</li>
+                    <li><strong>Correo electrónico:</strong> spoporte@synapdata.com.co</li>
+                </ul>
+                <h3 class="text-2xl font-bold mt-8 mb-4">1.2. Información que Recopilamos</h3>
+                <p>Recopilamos los siguientes tipos de información a través de la plataforma y durante el proceso de registro:</p>
+                <ul>
+                    <li><strong>Información de Identificación:</strong> Nombre completo, dirección de correo electrónico, número de teléfono.</li>
+                    <li><strong>Información de la Empresa:</strong> Nombre de la empresa, cargo, sector.</li>
+                    <li><strong>Datos de Uso de la Plataforma:</strong> Información sobre cómo interactúas con nuestra plataforma, incluyendo mapas, herramientas de análisis, y reportes generados.</li>
+                    <li><strong>Datos de Pago:</strong> Si realizas transacciones con nosotros, recopilamos la información necesaria para procesar tus pagos, como detalles de la tarjeta de crédito (gestionados por un procesador de pagos externo y seguro).</li>
+                    <li><strong>Datos de Localización (no personales):</strong> Datos geográficos que nuestros usuarios cargan en la plataforma para su análisis. Esta información es tratada como confidencial, pero no la utilizamos para identificarte personalmente.</li>
+                </ul>
+                <h3 class="text-2xl font-bold mt-8 mb-4">1.3. Finalidad de la Recolección de Datos</h3>
+                <p>La información que recopilamos tiene como finalidad:</p>
+                <ul>
+                    <li>Proporcionar y mejorar nuestros servicios.</li>
+                    <li>Administrar tu cuenta y personalizar tu experiencia.</li>
+                    <li>Comunicarnos contigo para ofrecerte soporte técnico, notificaciones importantes y actualizaciones del servicio.</li>
+                    <li>Enviar boletines informativos y material promocional sobre nuestros servicios, previa autorización expresa.</li>
+                    <li>Analizar el uso de la plataforma para mejorar nuestras funcionalidades y la experiencia del usuario.</li>
+                </ul>
+                <h3 class="text-2xl font-bold mt-8 mb-4">1.4. Derechos de los Titulares de Datos (ARCO)</h3>
+                <p>De acuerdo con la Ley 1581 de 2012, tienes los siguientes derechos como titular de tus datos:</p>
+                <ul>
+                    <li><strong>Acceso:</strong> Conocer, actualizar y rectificar tus datos personales.</li>
+                    <li><strong>Rectificación:</strong> Solicitar la corrección de datos incompletos o inexactos.</li>
+                    <li><strong>Cancelación:</strong> Revocar la autorización y/o solicitar la supresión de tus datos de nuestras bases de datos, siempre y cuando no exista una obligación legal o contractual de mantenerlos.</li>
+                    <li><strong>Oposición:</strong> Oponerte al tratamiento de tus datos para fines de mercadeo directo.</li>
+                </ul>
+                <p class="mt-4">Para ejercer estos derechos, por favor envía una solicitud al correo electrónico spoporte@synapdata.com.co o a la dirección [Dirección física de tu empresa], adjuntando una copia de tu documento de identidad.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">1.5. Seguridad de la Información</h3>
+                <p>Hemos implementado medidas de seguridad técnicas, administrativas y físicas para proteger tus datos contra el acceso no autorizado, la pérdida o la alteración. Sin embargo, recuerda que ninguna transmisión de datos por internet es 100% segura.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">1.6. Divulgación a Terceros</h3>
+                <p>No vendemos, alquilamos ni comercializamos tu información personal. Podemos compartir tus datos con proveedores de servicios externos (por ejemplo, procesadores de pagos o servicios de almacenamiento en la nube) que nos ayudan a operar la plataforma, siempre y cuando estos se comprometan a cumplir con nuestra política de privacidad.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">1.7. Cambios en las Políticas de Privacidad</h3>
+                <p>Nos reservamos el derecho de modificar esta política en cualquier momento. Te notificaremos sobre cualquier cambio sustancial a través de la plataforma o por correo electrónico.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Términos de Servicio -->
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('termsModal')">&times;</span>
+            <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Términos y Condiciones del Servicio</h2>
+            <div class="prose max-w-none text-gray-700">
+                <p class="text-lg font-semibold mb-4">Última actualización: Agosto de 2025</p>
+                <p>Bienvenido a Synapdata. Estos Términos y Condiciones ("Términos") rigen tu acceso y uso de la plataforma de análisis de datos geográficos de Synapdata (el "Servicio"). Al acceder o utilizar el Servicio, aceptas estar legalmente obligado por estos Términos.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">2.1. Aceptación de los Términos</h3>
+                <p>Al registrarte, acceder o utilizar el Servicio, confirmas que has leído, entendido y aceptado estos Términos, así como nuestras Políticas de Privacidad. Si no estás de acuerdo con estos Términos, no debes utilizar el Servicio.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">2.2. Descripción del Servicio</h3>
+                <p>Synapdata es una plataforma que permite a los usuarios cargar, visualizar y analizar datos geográficos para obtener información valiosa para la toma de decisiones. El Servicio incluye herramientas de mapeo, análisis espacial, generación de reportes y otras funcionalidades relacionadas.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">2.3. Obligaciones del Usuario</h3>
+                <ul>
+                    <li><strong>Información de Cuenta:</strong> Eres responsable de mantener la confidencialidad de la información de tu cuenta, incluyendo tu contraseña.</li>
+                    <li><strong>Uso Lícito:</strong> Te comprometes a utilizar el Servicio de manera lícita, ética y de acuerdo con estos Términos. No debes usar el Servicio para fines ilegales o no autorizados.</li>
+                    <li><strong>Contenido del Usuario:</strong> Eres el único responsable de los datos que cargas en la plataforma. Te garantizas que tienes los derechos necesarios para utilizar, cargar y analizar dichos datos.</li>
+                    <li><strong>Conducta Prohibida:</strong> No debes (a) interferir con la seguridad del Servicio, (b) usar el Servicio para enviar spam, (c) intentar acceder a cuentas de otros usuarios, o (d) copiar, modificar o distribuir cualquier parte del Servicio sin nuestra autorización.</li>
+                </ul>
+                <h3 class="text-2xl font-bold mt-8 mb-4">2.4. Propiedad Intelectual</h3>
+                <ul>
+                    <li><strong>Derechos de Synapdata:</strong> El Servicio y todo su contenido, incluyendo el software, el diseño, los logotipos y las herramientas, son propiedad de Synapdata y están protegidos por las leyes de propiedad intelectual de Colombia e internacionales.</li>
+                    <li><strong>Derechos del Usuario:</strong> Conservas todos los derechos de propiedad intelectual sobre los datos que cargas en el Servicio. Synapdata no reclama la propiedad sobre tus datos.</li>
+                </ul>
+                <h3 class="text-2xl font-bold mt-8 mb-4">2.5. Limitación de Responsabilidad</h3>
+                <p>El Servicio se proporciona "tal cual" y "según disponibilidad", sin garantías de ningún tipo. Synapdata no será responsable por daños indirectos, incidentales, especiales, consecuentes o punitivos, incluyendo pérdida de datos, lucro cesante o interrupción del negocio.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">2.6. Indemnización</h3>
+                <p>Te comprometes a indemnizar y mantener indemne a Synapdata, sus directores, empleados y agentes, de cualquier reclamo, demanda, daño, pérdida o gasto (incluyendo honorarios de abogados) que surja de tu uso indebido del Servicio o de tu incumplimiento de estos Términos.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">2.7. Vigencia y Terminación</h3>
+                <p>Estos Términos entran en vigencia en la fecha en que comienzas a utilizar el Servicio y continuarán vigentes hasta que sean terminados por ti o por Synapdata. Podemos suspender o terminar tu acceso al Servicio en cualquier momento y por cualquier motivo, sin previo aviso.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">2.8. Ley Aplicable y Jurisdicción</h3>
+                <p>Estos Términos se rigen por las leyes de la República de Colombia. Cualquier disputa que surja de estos Términos o del uso del Servicio será resuelta exclusivamente por los tribunales de la ciudad de Barranquilla, Colombia.</p>
+                <h3 class="text-2xl font-bold mt-8 mb-4">2.9. Contacto</h3>
+                <p>Si tienes preguntas sobre estos Términos, por favor contáctanos en soporte@synapdata.com.co.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de Pie de Página (Footer) -->
+    <footer class="bg-gray-800 text-white py-8 px-4 rounded-t-3xl shadow-lg">
+        <div class="container mx-auto text-center">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-2xl font-bold">Synapdata</h3>
+                    <p class="text-gray-400 text-sm">Análisis de Datos Geográficos</p>
+                </div>
+                <!-- Navegación del pie de página -->
+                <nav class="flex space-x-6">
+                    <a href="#features" class="text-gray-300 hover:text-white">Características</a>
+                    <a href="#sig-benefits" class="text-gray-300 hover:text-white">SIG</a>
+                    <a href="#study" class="text-gray-300 hover:text-white">Creando Valor</a>
+                    <a href="#solutions" class="text-gray-300 hover:text-white">Soluciones</a>
+                    <button type="button" onclick="openModal('contactModal')" class="text-gray-300 hover:text-white">Contacto</button>
+                </nav>
+            </div>
+            <!-- Información legal y de derechos de autor -->
+            <div class="border-t border-gray-700 pt-6 text-gray-500 text-sm">
+                <p>&copy; 2025 Synapdata. Todos los derechos reservados.</p>
+                <div class="flex justify-center space-x-4 mt-4">
+                    <button type="button" onclick="openModal('privacyModal')" class="hover:text-white">Política de Privacidad</button>
+                    <button type="button" onclick="openModal('termsModal')" class="hover:text-white">Términos de Servicio</button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón "Volver Arriba" -->
+    <div id="back-to-top" class="back-to-top">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica de los modales
+            const contactModal = document.getElementById('contactModal');
+            const privacyModal = document.getElementById('privacyModal');
+            const termsModal = document.getElementById('termsModal');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+            // Función para abrir un modal específico
+            window.openModal = function(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.style.display = 'flex'; // Muestra el modal
+                setTimeout(() => modal.classList.add('open'), 10); // Añade la clase 'open' para la animación
+            }
+
+            // Función para cerrar un modal específico
+            window.closeModal = function(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.remove('open'); // Elimina la clase 'open' para la animación inversa
+                setTimeout(() => modal.style.display = 'none', 300); // Oculta el modal después de la animación
+            }
+
+            // Cierra el modal si se hace clic fuera de su contenido
+            window.addEventListener('click', (event) => {
+                if (event.target === contactModal) {
+                    closeModal('contactModal');
+                } else if (event.target === privacyModal) {
+                    closeModal('privacyModal');
+                } else if (event.target === termsModal) {
+                    closeModal('termsModal');
+                }
+            });
+
+            // Lógica del botón "Volver arriba"
+            const backToTopButton = document.getElementById('back-to-top');
+            window.addEventListener('scroll', () => {
+                // Muestra u oculta el botón según la posición de desplazamiento
+                if (window.scrollY > 300) {
+                    backToTopButton.classList.add('show');
+                } else {
+                    backToTopButton.classList.remove('show');
+                }
+            });
+
+            backToTopButton.addEventListener('click', () => {
+                // Desplaza la página suavemente hacia arriba
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Lógica del menú móvil
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const closeMobileMenuButton = document.getElementById('close-mobile-menu');
+            const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+            const mobileMenuLinks = mobileMenuPanel.querySelectorAll('a');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenuPanel.classList.remove('hidden'); // Muestra el panel
+                mobileMenuOverlay.classList.add('open'); // Muestra la superposición
+                setTimeout(() => {
+                    mobileMenuPanel.style.transform = 'translateX(0%)'; // Desliza el panel
+                }, 10);
+            });
+
+            closeMobileMenuButton.addEventListener('click', () => {
+                mobileMenuPanel.style.transform = 'translateX(100%)'; // Desliza el panel fuera
+                mobileMenuOverlay.classList.remove('open'); // Oculta la superposición
+                setTimeout(() => {
+                    mobileMenuPanel.classList.add('hidden'); // Oculta el panel después de la animación
+                }, 300);
+            });
+
+            // Cierra el menú móvil al hacer clic en un enlace
+            mobileMenuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenuPanel.style.transform = 'translateX(100%)';
+                    mobileMenuOverlay.classList.remove('open');
+                    setTimeout(() => {
+                        mobileMenuPanel.classList.add('hidden');
+                    }, 300);
+                });
+            });
+
+            // Cierra el menú móvil al hacer clic en la superposición
+            mobileMenuOverlay.addEventListener('click', () => {
+                 mobileMenuPanel.style.transform = 'translateX(100%)';
+                 mobileMenuOverlay.classList.remove('open');
+                 setTimeout(() => {
+                    mobileMenuPanel.classList.add('hidden');
+                 }, 300);
+            });
+
+            // Lógica del efecto de desplazamiento del encabezado
+            const mainHeader = document.getElementById('main-header');
+            window.addEventListener('scroll', () => {
+                // Cambia el estilo del encabezado al desplazarse
+                if (window.scrollY > 50) {
+                    mainHeader.classList.add('header-scrolled');
+                } else {
+                    mainHeader.classList.remove('header-scrolled');
+                }
+            });
+
+            // Lógica de envío del formulario con una API simulada y retroceso exponencial
+            const contactForm = document.getElementById('contactForm');
+            const submitButton = document.getElementById('modal-submit-button');
+            const formMessage = document.getElementById('modal-form-message');
+            const mockApiEndpoint = 'https://jsonplaceholder.typicode.com/posts'; // Endpoint de API simulada
+
+            /**
+             * Envía los datos del formulario a un endpoint de API con reintentos.
+             * Implementa retroceso exponencial en caso de fallos.
+             * @param {string} name - Nombre completo del remitente.
+             * @param {string} email - Correo electrónico del remitente.
+             * @param {string} message - Mensaje del remitente.
+             * @returns {Promise<boolean>} - Verdadero si el envío fue exitoso, falso en caso contrario.
+             */
+            const sendFormData = async (name, email, message) => {
+                let retryCount = 0;
+                const maxRetries = 3; // Número máximo de reintentos
+                while (retryCount < maxRetries) {
+                    try {
+                        const response = await fetch(mockApiEndpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name, email, message }),
+                        });
+
+                        if (!response.ok) {
+                            // Si la respuesta no es OK, lanza un error para reintentar
+                            throw new Error(`Error del servidor: ${response.status}`);
+                        }
+                        return true; // Éxito en el envío
+                    } catch (error) {
+                        retryCount++;
+                        if (retryCount < maxRetries) {
+                            // Calcula el retraso exponencial (1s, 2s, 4s...)
+                            const delay = Math.pow(2, retryCount) * 1000;
+                            formMessage.textContent = `Error al enviar. Reintentando en ${delay / 1000} segundos...`;
+                            formMessage.className = 'mt-4 text-sm text-center font-medium text-yellow-600';
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                        }
+                    }
+                }
+                return false; // Fallo después de todos los reintentos
+            };
+
+            submitButton.addEventListener('click', async (event) => {
+                event.preventDefault(); // Previene el envío por defecto del formulario
+                const name = document.getElementById('modal-name').value;
+                const email = document.getElementById('modal-email').value;
+                const message = document.getElementById('modal-message').value;
+
+                // Validación básica de campos
+                if (!name.trim() || !email.trim() || !message.trim()) {
+                    formMessage.textContent = 'Por favor, completa todos los campos.';
+                    formMessage.className = 'mt-4 text-sm text-center font-medium text-red-500';
+                    return;
+                }
+
+                formMessage.textContent = 'Enviando...';
+                formMessage.className = 'mt-4 text-sm text-center font-medium text-blue-500';
+                submitButton.disabled = true; // Deshabilita el botón para evitar envíos múltiples
+
+                const success = await sendFormData(name, email, message); // Intenta enviar los datos
+
+                if (success) {
+                    formMessage.textContent = '¡Gracias! Tu mensaje ha sido enviado.';
+                    formMessage.className = 'mt-4 text-sm text-center font-medium text-green-600';
+                    contactForm.reset(); // Limpia el formulario
+                    // Mantiene el mensaje de éxito visible por unos segundos
+                    setTimeout(() => {
+                        formMessage.textContent = '';
+                    }, 5000);
+                } else {
+                    formMessage.textContent = 'Hubo un problema al enviar tu mensaje. Por favor, inténtalo de nuevo más tarde.';
+                    formMessage.className = 'mt-4 text-sm text-center font-medium text-red-500';
+                }
+                submitButton.disabled = false; // Habilita el botón de nuevo
+            });
+        });
+    </script>
+</body>
+</html>
